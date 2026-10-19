@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+.font-urdu {
+  font-family: 'Noto Sans Arabic', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', sans-serif;
+}
+.font-mono-num {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+/* Completely remove up/down spinner arrows from ALL number inputs */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+  display: none !important;
+}
+input[type=number] {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #thermal-receipt-area, #thermal-receipt-area * {
+    visibility: visible;
+  }
+  #thermal-receipt-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 78mm;
+    margin: 0;
+    padding: 10px;
+    background: white;
+    color: black;
+  }
+}

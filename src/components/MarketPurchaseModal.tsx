@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Supplier, Product, UnitType } from '../types';
-import { X, Check, ShoppingCart, PackagePlus, AlertCircle } from 'lucide-react';
+import { X, Check, ShoppingCart, PackagePlus, AlertCircle, ShoppingBasket } from 'lucide-react';
 import { sounds } from '../utils/audio';
 
 interface MarketPurchaseModalProps {
@@ -168,7 +168,7 @@ export const MarketPurchaseModal: React.FC<MarketPurchaseModalProps> = ({
         <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-xl">
-              🛒
+              <ShoppingBasket className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-black">Market Stock Purchase</h2>
@@ -350,7 +350,7 @@ export const MarketPurchaseModal: React.FC<MarketPurchaseModalProps> = ({
 
             {paymentOption !== 'full_cash' && (
               <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-xl text-[11px] font-bold text-amber-950 leading-relaxed">
-                💡 <strong>بعد میں ادائیگی (Pay Later) کا طریقہ:</strong> یہ رقم خود بخود <strong>Accounts Payable (Account 20100 - واجب الادا)</strong> میں جمع ہو جائے گی۔ بعد میں جب کیش ادا کریں، <strong>Khata &gt; Wholesale Suppliers</strong> میں جا کر &ldquo;Paid Supplier&rdquo; کا بٹن دبائیں۔
+                <strong>بعد میں ادائیگی (Pay Later) کا طریقہ:</strong> یہ رقم خود بخود <strong>Accounts Payable (Account 20100 - واجب الادا)</strong> میں جمع ہو جائے گی۔ بعد میں جب کیش ادا کریں، <strong>Khata &gt; Wholesale Suppliers</strong> میں جا کر &ldquo;Paid Supplier&rdquo; کا بٹن دبائیں۔
               </div>
             )}
           </div>

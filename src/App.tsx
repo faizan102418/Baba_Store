@@ -229,7 +229,7 @@ export default function App() {
     }
   };
 
-  // 7. Add Customer Khata Transaction (🔴 Credit or 🟢 Payment)
+  // 7. Add customer khata transaction (credit or payment)
   const handleAddTransaction = (
     customerId: string,
     type: 'credit' | 'payment',
