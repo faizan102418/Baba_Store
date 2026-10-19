@@ -15,6 +15,8 @@ import {
   Receipt,
   ChevronDown,
   ChevronUp,
+  ShoppingBasket,
+  Store,
 } from 'lucide-react';
 import { sounds } from '../utils/audio';
 
@@ -302,7 +304,7 @@ export const POSScreen: React.FC<POSScreenProps> = ({
   );
 
   return (
-    <div className="flex flex-col gap-2.5 h-[calc(100vh-80px)] p-2.5 overflow-hidden">
+    <div className="pos-screen flex flex-col gap-2.5 h-[calc(100vh-80px)] p-2.5 overflow-hidden">
       {/* DAILY SALES SUMMARY BAR (Quick Operational Insight) */}
       <div className="bg-white rounded-2xl border-2 border-slate-300 shadow-xs px-3.5 py-2 shrink-0">
         <div className="flex items-center justify-between gap-2">
@@ -433,7 +435,7 @@ export const POSScreen: React.FC<POSScreenProps> = ({
                 className="h-13 min-h-[48px] px-3.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black rounded-2xl shadow-md flex items-center gap-1.5 cursor-pointer transition shrink-0"
                 title="Log Market Stock Purchase (نقد یا ادھار مال خریدا)"
               >
-                <span>🛒</span>
+                <ShoppingBasket className="w-4 h-4" />
                 <span className="hidden sm:inline">Buy Stock (مال خریدا)</span>
               </button>
             )}
@@ -474,8 +476,8 @@ export const POSScreen: React.FC<POSScreenProps> = ({
         <div className="flex-1 p-3 overflow-y-auto">
           {products.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 max-w-md mx-auto space-y-4">
-              <div className="w-16 h-16 rounded-3xl bg-slate-900 text-amber-400 flex items-center justify-center text-3xl font-black">
-                🏪
+              <div className="w-16 h-16 rounded-2xl bg-slate-900 text-amber-400 flex items-center justify-center">
+                <Store className="w-8 h-8" />
               </div>
               <div>
                 <h3 className="text-xl font-black text-slate-900">Babo Store Counter Ready</h3>

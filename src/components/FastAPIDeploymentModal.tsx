@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Code2, Server, Terminal, ShieldCheck, Copy, Check, FileUp, Cpu, Database } from 'lucide-react';
+import { X, Code2, Server, Terminal, ShieldCheck, Copy, Check, FileUp, Cpu, Database, Code } from 'lucide-react';
 
 interface FastAPIDeploymentModalProps {
   isOpen: boolean;
@@ -158,7 +158,7 @@ jobs:
             git pull origin main
             docker compose down
             docker compose up --build -d
-            echo "🚀 Mama G POS successfully deployed and running!"`;
+            echo "Mama G POS successfully deployed and running!"`;
 
   const fileUploadCode = `# backend/app/routers/upload.py
 from fastapi import APIRouter, UploadFile, File, HTTPException, status
@@ -225,7 +225,7 @@ async def bulk_upload_products(file: UploadFile = File(...)):
         {/* Top Header */}
         <div className="px-6 py-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl font-mono text-xl">🐍</span>
+            <span className="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl"><Code className="w-5 h-5" /></span>
             <div>
               <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                 FastAPI + Docker + CI/CD Architecture

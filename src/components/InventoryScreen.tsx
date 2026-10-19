@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
-import { Search, Plus, Check, Edit2, Trash2, Sparkles, Package } from 'lucide-react';
+import { Search, Plus, Check, Edit2, Trash2, Sparkles, Package, ShoppingBasket } from 'lucide-react';
 import { sounds } from '../utils/audio';
 
 interface InventoryScreenProps {
@@ -84,8 +84,8 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
       <div className="bg-white rounded-3xl border-2 border-slate-200 p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 min-h-[48px] min-w-[48px] bg-slate-900 text-amber-400 rounded-2xl flex items-center justify-center font-black text-2xl">
-              📦
+            <div className="w-12 h-12 min-h-[48px] min-w-[48px] bg-slate-900 text-amber-400 rounded-2xl flex items-center justify-center">
+              <Package className="w-6 h-6" />
             </div>
             <div>
               <h2 className="text-xl font-black text-slate-900">Stock & Price List</h2>
@@ -102,7 +102,7 @@ export const InventoryScreen: React.FC<InventoryScreenProps> = ({
               onClick={onOpenMarketPurchase}
               className="w-full md:w-auto h-12 min-h-[48px] px-4 bg-slate-900 hover:bg-black active:scale-95 text-white font-black rounded-2xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition text-sm"
             >
-              <span>🛒 Market Purchase (مال خریدا)</span>
+              <><ShoppingBasket className="w-4 h-4" /> Market Purchase (مال خریدا)</>
             </button>
           )}
 

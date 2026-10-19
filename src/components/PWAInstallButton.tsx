@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
-import { Download, Laptop, Check, X } from 'lucide-react';
+import { Laptop, X, Zap } from 'lucide-react';
 
 export const PWAInstallButton: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall();
@@ -59,7 +59,7 @@ export const PWAInstallButton: React.FC<{ compact?: boolean }> = ({ compact = fa
             <div className="space-y-3 text-sm text-slate-700 leading-relaxed">
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
                 <p className="font-black text-emerald-950">
-                  ⚡ 100% Offline Capability (بغیر انٹرنیٹ استعمال کریں):
+                  <Zap className="inline w-4 h-4 mr-1" /> 100% Offline Capability (بغیر انٹرنیٹ استعمال کریں):
                 </p>
                 <p className="text-xs text-emerald-900 font-urdu font-bold mt-1">
                   یہ ایپ آپ کے شاپ لیپ ٹاپ کی میموری (LocalStorage) میں ڈیٹا محفوظ کرتی ہے۔ انٹرنیٹ بند ہونے پر بھی بلنگ، کھاتہ، اور اسٹاک بلاتعطل کام کرتے ہیں۔

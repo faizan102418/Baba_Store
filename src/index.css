@@ -1,18 +1,205 @@
 @import "tailwindcss";
 
+@theme {
+  --color-slate-50: #f5f7f5;
+  --color-slate-100: #e9eeeb;
+  --color-slate-200: #d6dfda;
+  --color-slate-300: #bdcbc4;
+  --color-slate-400: #879a90;
+  --color-slate-500: #65796f;
+  --color-slate-600: #4d6257;
+  --color-slate-700: #354b41;
+  --color-slate-800: #233a31;
+  --color-slate-900: #172e25;
+  --color-slate-950: #10231c;
+  --color-emerald-50: #eaf5ef;
+  --color-emerald-100: #d6ebdf;
+  --color-emerald-200: #b8dcc8;
+  --color-emerald-300: #8ec3a8;
+  --color-emerald-400: #5da881;
+  --color-emerald-500: #358a61;
+  --color-emerald-600: #267451;
+  --color-emerald-700: #205d43;
+  --color-emerald-800: #1c4c39;
+  --color-emerald-900: #193f31;
+  --color-emerald-950: #0c281d;
+  --color-amber-50: #fbf5e7;
+  --color-amber-100: #f5e9c8;
+  --color-amber-200: #ebd89e;
+  --color-amber-300: #ddc177;
+  --color-amber-400: #c8a64e;
+  --color-amber-500: #b48c34;
+  --color-amber-600: #92702a;
+  --color-amber-700: #755923;
+  --color-amber-800: #624a20;
+  --color-amber-900: #523f1f;
+  --color-amber-950: #2e2412;
+  --color-red-50: #fbefec;
+  --color-red-100: #f4ddd7;
+  --color-red-200: #e9c2b8;
+  --color-red-300: #dba294;
+  --color-red-400: #c77b69;
+  --color-red-500: #b45d4d;
+  --color-red-600: #9c483b;
+  --color-red-700: #813c33;
+  --color-red-800: #6c352e;
+  --color-red-900: #5c302a;
+  --color-red-950: #321713;
+  --color-blue-50: #edf4f4;
+  --color-blue-100: #dceaea;
+  --color-blue-200: #bfd8d8;
+  --color-blue-300: #99c0c0;
+  --color-blue-400: #6aa2a4;
+  --color-blue-500: #438889;
+  --color-blue-600: #347274;
+  --color-blue-700: #2d5e60;
+  --color-blue-800: #294e50;
+  --color-blue-900: #254344;
+  --color-blue-950: #112829;
+  --font-sans: "Aptos", "Segoe UI", "Noto Sans", system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+  --app-paper: #f2f4f0;
+  --app-surface: #fbfcf8;
+  --app-ink: #172e25;
+  --app-muted: #65796f;
+  --app-line: #d6dfda;
+  --app-accent: #267451;
+  --app-accent-dark: #1c4c39;
+  --app-gold: #c8a64e;
+  --font-urdu: "Noto Naskh Arabic", "Urdu Typesetting", "Noto Sans Arabic", serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--app-paper);
+}
+
 body {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  min-width: 320px;
+  min-height: 100dvh;
+  color: var(--app-ink);
+  background: var(--app-paper);
+  font-family: "Aptos", "Segoe UI", "Noto Sans", system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible,
+label:focus-within {
+  outline: 3px solid #c8a64e !important;
+  outline-offset: 2px;
+}
+
+input, select, textarea {
+  color: var(--app-ink);
+}
+
 .font-urdu {
-  font-family: 'Noto Sans Arabic', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', sans-serif;
+  font-family: var(--font-urdu);
+  line-height: 1.5;
 }
+
 .font-mono-num {
-  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: ui-monospace, "Cascadia Code", "SFMono-Regular", Menlo, Consolas, monospace;
   font-feature-settings: "tnum";
   font-variant-numeric: tabular-nums;
 }
 
-/* Completely remove up/down spinner arrows from ALL number inputs */
+.bg-white {
+  background-color: var(--app-surface) !important;
+}
+
+.bg-black {
+  background-color: #10231c !important;
+}
+
+.border-white {
+  border-color: var(--app-line) !important;
+}
+
+::selection {
+  background: #d8bc73;
+  color: #172e25;
+}
+
+/* Warm paper surfaces and quiet depth keep long cashier shifts easy on the eyes. */
+#root {
+  min-height: 100dvh;
+}
+
+.pos-screen {
+  height: calc(100dvh - 76px);
+  min-height: 580px;
+  background: var(--app-paper);
+}
+
+.pos-screen > div:first-child {
+  background: var(--app-surface);
+  border-color: var(--app-line);
+}
+
+.pos-screen > div,
+.pos-screen section {
+  min-width: 0;
+}
+
+.pos-screen .shadow-xs,
+.pos-screen .shadow-2xs {
+  box-shadow: 0 1px 2px rgba(25, 55, 41, .07), 0 6px 18px rgba(25, 55, 41, .035);
+}
+
+.pos-screen input::placeholder {
+  color: #84948b;
+  opacity: 1;
+}
+
+@media (max-width: 1023px) {
+  .pos-screen {
+    height: auto;
+    min-height: calc(100dvh - 120px);
+    overflow: visible;
+  }
+  .pos-screen > .flex-1 {
+    overflow: visible;
+  }
+  .pos-screen > .flex-1 > div {
+    min-height: 380px;
+  }
+  .pos-screen > .flex-1 > div:last-child {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 13px;
+  }
+  .pos-screen {
+    padding: .65rem;
+    gap: .65rem;
+  }
+  .pos-screen > div:first-child {
+    border-radius: 1rem;
+  }
+}
+
+/* Number fields should stay clean for fast keyboard entry. */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button,

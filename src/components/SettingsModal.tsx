@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShopSettings, Product, Customer, Supplier, SupplierTransaction, Sale, Expense, KhataTransaction } from '../types';
-import { X, Save, Download, Upload, RotateCcw, Check, Store, Laptop, FileSpreadsheet, Package, Receipt, BookOpen } from 'lucide-react';
+import { X, Save, Download, Upload, RotateCcw, Check, Store, Laptop, FileSpreadsheet, Package, Receipt, BookOpen, Zap } from 'lucide-react';
 import { sounds } from '../utils/audio';
 import {
   exportInventoryToCSV,
@@ -365,7 +365,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
 
             <div className="text-[11px] text-slate-500 font-semibold bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-              ⚡ <strong>Excel Tip:</strong> All CSV files include UTF-8 Byte Order Mark (BOM), ensuring Urdu product names, customer names, and Pakistani Rupee calculations open cleanly without font corruption.
+              <Zap className="inline w-3.5 h-3.5 text-amber-600 mr-1" /><strong>Excel Tip:</strong> All CSV files include UTF-8 Byte Order Mark (BOM), ensuring Urdu product names, customer names, and Pakistani Rupee calculations open cleanly without font corruption.
             </div>
           </div>
 
