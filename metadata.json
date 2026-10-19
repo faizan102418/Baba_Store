@@ -1,0 +1,6 @@
+{
+  "name": "Babo Store - Kiryana POS & Khata",
+  "description": "Hyper-simplified Kiryana Point-of-Sale, 10-second product entry, 2-click checkout, and Dukan Khata credit management for local retail stores.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
