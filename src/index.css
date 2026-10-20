@@ -1,28 +1,28 @@
 @import "tailwindcss";
 
 @theme {
-  --color-slate-50: #f5f7f5;
-  --color-slate-100: #e9eeeb;
-  --color-slate-200: #d6dfda;
-  --color-slate-300: #bdcbc4;
-  --color-slate-400: #879a90;
-  --color-slate-500: #65796f;
-  --color-slate-600: #4d6257;
-  --color-slate-700: #354b41;
-  --color-slate-800: #233a31;
-  --color-slate-900: #172e25;
-  --color-slate-950: #10231c;
-  --color-emerald-50: #eaf5ef;
-  --color-emerald-100: #d6ebdf;
-  --color-emerald-200: #b8dcc8;
-  --color-emerald-300: #8ec3a8;
-  --color-emerald-400: #5da881;
-  --color-emerald-500: #358a61;
-  --color-emerald-600: #267451;
-  --color-emerald-700: #205d43;
-  --color-emerald-800: #1c4c39;
-  --color-emerald-900: #193f31;
-  --color-emerald-950: #0c281d;
+  --color-slate-50: #f5f7fb;
+  --color-slate-100: #edf1f7;
+  --color-slate-200: #dce4ef;
+  --color-slate-300: #c4d0df;
+  --color-slate-400: #8b9bb0;
+  --color-slate-500: #6d7e96;
+  --color-slate-600: #566880;
+  --color-slate-700: #40536d;
+  --color-slate-800: #2d405c;
+  --color-slate-900: #1c304e;
+  --color-slate-950: #12233d;
+  --color-emerald-50: #eaf3ff;
+  --color-emerald-100: #d8e8ff;
+  --color-emerald-200: #b9d5fb;
+  --color-emerald-300: #90baf2;
+  --color-emerald-400: #6298e4;
+  --color-emerald-500: #3f7bd4;
+  --color-emerald-600: #2d66c1;
+  --color-emerald-700: #2453a1;
+  --color-emerald-800: #204583;
+  --color-emerald-900: #1d3b6e;
+  --color-emerald-950: #13284b;
   --color-amber-50: #fbf5e7;
   --color-amber-100: #f5e9c8;
   --color-amber-200: #ebd89e;
@@ -45,31 +45,33 @@
   --color-red-800: #6c352e;
   --color-red-900: #5c302a;
   --color-red-950: #321713;
-  --color-blue-50: #edf4f4;
-  --color-blue-100: #dceaea;
-  --color-blue-200: #bfd8d8;
-  --color-blue-300: #99c0c0;
-  --color-blue-400: #6aa2a4;
-  --color-blue-500: #438889;
-  --color-blue-600: #347274;
-  --color-blue-700: #2d5e60;
-  --color-blue-800: #294e50;
-  --color-blue-900: #254344;
-  --color-blue-950: #112829;
-  --font-sans: "Aptos", "Segoe UI", "Noto Sans", system-ui, -apple-system, sans-serif;
+  --color-blue-50: #e8f8fb;
+  --color-blue-100: #d2f0f5;
+  --color-blue-200: #a9e1ea;
+  --color-blue-300: #74ccd9;
+  --color-blue-400: #3bb2c5;
+  --color-blue-500: #2094aa;
+  --color-blue-600: #19778d;
+  --color-blue-700: #1a6275;
+  --color-blue-800: #1d5262;
+  --color-blue-900: #1d4553;
+  --color-blue-950: #102d39;
+  --font-sans: "Segoe UI", Tahoma, Arial, system-ui, sans-serif;
 }
 
 :root {
   color-scheme: light;
-  --app-paper: #f2f4f0;
-  --app-surface: #fbfcf8;
-  --app-ink: #172e25;
-  --app-muted: #65796f;
-  --app-line: #d6dfda;
-  --app-accent: #267451;
-  --app-accent-dark: #1c4c39;
-  --app-gold: #c8a64e;
-  --font-urdu: "Noto Naskh Arabic", "Urdu Typesetting", "Noto Sans Arabic", serif;
+  --app-paper: #f2f5fa;
+  --app-surface: #ffffff;
+  --app-ink: #1c304e;
+  --app-muted: #6d7e96;
+  --app-line: #dce4ef;
+  --app-accent: #2d66c1;
+  --app-accent-dark: #204583;
+  --app-gold: #d2a33e;
+  --app-coral: #b65e4c;
+  --font-display: "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-urdu: "Segoe UI", Tahoma, Arial, sans-serif;
 }
 
 * {
@@ -86,7 +88,7 @@ body {
   min-height: 100dvh;
   color: var(--app-ink);
   background: var(--app-paper);
-  font-family: "Aptos", "Segoe UI", "Noto Sans", system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   font-size: 14px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -102,7 +104,7 @@ button {
 
 button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible,
 label:focus-within {
-  outline: 3px solid #c8a64e !important;
+  outline: 3px solid #91b9f1 !important;
   outline-offset: 2px;
 }
 
@@ -126,7 +128,7 @@ input, select, textarea {
 }
 
 .bg-black {
-  background-color: #10231c !important;
+  background-color: #12233d !important;
 }
 
 .border-white {
@@ -134,8 +136,8 @@ input, select, textarea {
 }
 
 ::selection {
-  background: #d8bc73;
-  color: #172e25;
+  background: #d8e8ff;
+  color: #1c304e;
 }
 
 /* Warm paper surfaces and quiet depth keep long cashier shifts easy on the eyes. */
@@ -229,5 +231,246 @@ input[type=number] {
     padding: 10px;
     background: white;
     color: black;
+  }
+}
+
+/* Babo Store — NexoPOS-inspired visual system with HighFly blue and cyan accents. */
+:root {
+  --color-slate-50: #f5f7fb;
+  --color-slate-100: #edf1f7;
+  --color-slate-200: #dce4ef;
+  --color-slate-300: #c4d0df;
+  --color-slate-400: #8b9bb0;
+  --color-slate-500: #6d7e96;
+  --color-slate-600: #566880;
+  --color-slate-700: #40536d;
+  --color-slate-800: #2d405c;
+  --color-slate-900: #1c304e;
+  --color-slate-950: #12233d;
+  --color-emerald-50: #eaf3ff;
+  --color-emerald-100: #d8e8ff;
+  --color-emerald-200: #b9d5fb;
+  --color-emerald-300: #90baf2;
+  --color-emerald-400: #6298e4;
+  --color-emerald-500: #3f7bd4;
+  --color-emerald-600: #2d66c1;
+  --color-emerald-700: #2453a1;
+  --color-emerald-800: #204583;
+  --color-emerald-900: #1d3b6e;
+  --color-emerald-950: #13284b;
+  --color-amber-400: #e0b54d;
+  --color-amber-500: #c99a34;
+  --color-amber-600: #a77c25;
+  --font-sans: "Segoe UI", Tahoma, Arial, system-ui, sans-serif;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 50% -24rem, rgba(59, 130, 246, .09), transparent 48rem),
+    var(--app-paper);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  letter-spacing: -.025em;
+}
+
+button, input, select, textarea {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 160ms;
+  transition-timing-function: cubic-bezier(.2, .75, .25, 1);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* The top bar is the app's fixed point: quiet, high contrast, always in reach. */
+header.sticky {
+  background: rgba(255, 255, 255, .97);
+  color: #1c304e;
+  border-color: #dce4ef;
+  box-shadow: 0 4px 18px rgba(26, 48, 78, .08);
+  backdrop-filter: blur(12px);
+}
+
+header.sticky h1 {
+  color: #1c304e;
+}
+
+header.sticky > div > div:first-child .font-urdu {
+  color: #6d7e96;
+}
+
+header.sticky nav {
+  border-color: #e2e9f2;
+  background: #f5f7fb;
+}
+
+header.sticky nav button:not([aria-current="page"]) {
+  color: #566880;
+}
+
+header.sticky nav button:not([aria-current="page"]):hover {
+  background: #e9eff7;
+  color: #1c304e;
+}
+
+header.sticky nav button[aria-current="page"] {
+  background: #2d66c1;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(45, 102, 193, .22);
+}
+
+header.sticky nav button[aria-current="page"] .font-urdu {
+  color: #eaf3ff;
+}
+
+header.sticky img {
+  border: 1px solid #e2e9f2;
+  box-shadow: 0 2px 8px rgba(26, 48, 78, .09);
+}
+
+header.sticky > div > div:last-child > button[title="Sound Off"],
+header.sticky > div > div:last-child > button[title="Sound On"],
+header.sticky > div > div:last-child > button[aria-label="Settings and backup"] {
+  border: 1px solid #dce4ef;
+  background: #f5f7fb;
+  color: #566880;
+  box-shadow: none;
+}
+
+header.sticky > div > div:last-child > button[title="Sound Off"]:hover,
+header.sticky > div > div:last-child > button[title="Sound On"]:hover,
+header.sticky > div > div:last-child > button[aria-label="Settings and backup"]:hover {
+  background: #eaf3ff;
+  color: #2453a1;
+}
+
+/* Fine borders and tinted shadows replace the heavy stacked-card look. */
+.shadow-xs, .shadow-2xs {
+  box-shadow: 0 1px 2px rgba(28, 48, 78, .06), 0 8px 24px rgba(28, 48, 78, .035);
+}
+
+.rounded-3xl {
+  border-radius: 1.15rem;
+}
+
+.rounded-2xl {
+  border-radius: .9rem;
+}
+
+.pos-screen {
+  height: calc(100dvh - 76px);
+  min-height: 580px;
+  padding: 1rem;
+  gap: .85rem;
+}
+
+.pos-screen > div:first-child {
+  border-width: 1px;
+  border-color: var(--app-line);
+  box-shadow: 0 1px 2px rgba(28, 48, 78, .04);
+}
+
+.pos-screen > div:first-child .grid > div {
+  border-width: 1px;
+}
+
+.pos-screen > .flex-1 > div {
+  border-width: 1px;
+  border-color: var(--app-line);
+  box-shadow: 0 3px 18px rgba(28, 48, 78, .04);
+}
+
+.pos-screen input {
+  box-shadow: inset 0 1px 2px rgba(28, 48, 78, .025);
+}
+
+.pos-screen input:focus {
+  box-shadow: 0 0 0 3px rgba(45, 102, 193, .14);
+}
+
+.pos-screen .grid button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+main > div:not(.pos-screen) {
+  animation: view-enter 240ms ease-out both;
+}
+
+@keyframes view-enter {
+  from { opacity: .72; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Shared management panels and tabular reading rhythm. */
+main .border-2.border-slate-200,
+main .border-2.border-slate-300 {
+  border-width: 1px;
+}
+
+main table thead tr {
+  background: #f1f5fa;
+}
+
+main table th {
+  font-size: .68rem;
+  letter-spacing: .08em;
+  color: #6d7e96;
+}
+
+main table tbody tr {
+  transition: background-color 140ms ease;
+}
+
+main table tbody tr:hover {
+  background-color: #f7f9fc;
+}
+
+/* Dialogs read as focused workspaces rather than browser alerts. */
+.fixed.inset-0.z-50 {
+  background: rgba(18, 34, 58, .52);
+  backdrop-filter: blur(5px);
+}
+
+.fixed.inset-0.z-50 > div {
+  box-shadow: 0 24px 80px rgba(18, 34, 58, .24);
+}
+
+@media (max-width: 1023px) {
+  .pos-screen {
+    min-height: calc(100dvh - 122px);
+    height: auto;
+    padding: .75rem;
+    overflow: visible;
+  }
+
+  .pos-screen > .flex-1 {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 640px) {
+  .pos-screen {
+    padding: .55rem;
+    gap: .65rem;
+  }
+
+  header.sticky img {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
   }
 }
