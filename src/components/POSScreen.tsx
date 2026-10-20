@@ -178,7 +178,7 @@ export const POSScreen: React.FC<POSScreenProps> = ({
   const addToCart = (product: Product) => {
     if (product.stock <= 0) {
       sounds.playWarning();
-      alert(`⚠️ ${product.name} is Out of Stock! (اسٹاک ختم ہو چکا ہے)`);
+      alert(`${product.name} is out of stock. (اسٹاک ختم ہو چکا ہے)`);
       return;
     }
 
@@ -227,7 +227,7 @@ export const POSScreen: React.FC<POSScreenProps> = ({
     if (cart.length === 0) return;
     if (tenderNum < grandTotal) {
       sounds.playWarning();
-      alert(`⚠️ Cash received is less than bill! (وصول رقم بل سے کم ہے)`);
+      alert(`Cash received is less than the bill. (وصول رقم بل سے کم ہے)`);
       return;
     }
 

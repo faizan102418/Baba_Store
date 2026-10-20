@@ -150,7 +150,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                 </>
               ) : (
                 <div className="bg-red-50 text-red-800 p-1.5 rounded font-bold text-[11px] text-center border border-red-200 mt-1">
-                  ⚠️ Placed on Udhaar Khata (ادھار کھاتے میں درج)
+                  Placed on Udhaar Khata (ادھار کھاتے میں درج)
                 </div>
               )}
             </div>
