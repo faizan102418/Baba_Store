@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Product, CartItem, Customer, Sale } from '../types';
+import { Product, CartItem, Customer, Sale, Expense, KhataTransaction, SupplierTransaction, ShopSettings } from '../types';
+import { calculateCashDrawerBreakdown, CashDrawerBreakdown } from '../utils/accounting';
 import {
   Search,
   Plus,
@@ -15,6 +16,11 @@ import {
   Receipt,
   ChevronDown,
   ChevronUp,
+  Banknote,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Info,
+  X,
 } from 'lucide-react';
 import { sounds } from '../utils/audio';
 
@@ -22,6 +28,11 @@ interface POSScreenProps {
   products: Product[];
   customers: Customer[];
   sales?: Sale[];
+  expenses?: Expense[];
+  transactions?: KhataTransaction[];
+  supplierTransactions?: SupplierTransaction[];
+  settings?: ShopSettings;
+  cashDrawerBreakdown?: CashDrawerBreakdown;
   onCompleteSale: (sale: Omit<Sale, 'id' | 'invoiceNumber' | 'timestamp'>) => void;
   onOpenQuickAdd: () => void;
   onOpenMarketPurchase?: () => void;
@@ -33,6 +44,11 @@ export const POSScreen: React.FC<POSScreenProps> = ({
   products,
   customers,
   sales = [],
+  expenses = [],
+  transactions = [],
+  supplierTransactions = [],
+  settings,
+  cashDrawerBreakdown,
   onCompleteSale,
   onOpenQuickAdd,
   onOpenMarketPurchase,
@@ -52,8 +68,20 @@ export const POSScreen: React.FC<POSScreenProps> = ({
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [customerSearch, setCustomerSearch] = useState('');
 
+  // Cash in Drawer Audit Statement Modal state
+  const [isCashDrawerModalOpen, setIsCashDrawerModalOpen] = useState(false);
+
   // Daily Sales Summary View toggle
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(true);
+
+  // Live Physical Cash in Drawer Breakdown
+  const drawer = useMemo(() => {
+    if (cashDrawerBreakdown) return cashDrawerBreakdown;
+    if (settings) {
+      return calculateCashDrawerBreakdown(settings, sales, expenses, transactions, supplierTransactions);
+    }
+    return null;
+  }, [cashDrawerBreakdown, settings, sales, expenses, transactions, supplierTransactions]);
 
   // Daily Sales Summary (Today's performance calculations)
   const todaySummary = useMemo(() => {
@@ -327,8 +355,49 @@ export const POSScreen: React.FC<POSScreenProps> = ({
         </div>
 
         {isSummaryExpanded ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
-            {/* 1. Cash Sales */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-2">
+            {/* 1. Cash in Drawer (Live physical cash with all deductions) */}
+            {drawer ? (
+              <button
+                type="button"
+                onClick={() => setIsCashDrawerModalOpen(true)}
+                className={`p-2.5 rounded-xl border-2 flex items-center justify-between text-left transition cursor-pointer group ${
+                  drawer.netCashDrawer >= 0
+                    ? 'bg-amber-50 hover:bg-amber-100/90 border-amber-300'
+                    : 'bg-red-50 hover:bg-red-100 border-red-400'
+                }`}
+                title="Click to view Cash Drawer Audit & Statement (دراز حساب)"
+              >
+                <div>
+                  <div className="text-[11px] font-black uppercase text-amber-950 flex items-center gap-1.5">
+                    <Banknote className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Cash in Drawer (دراز کیش)</span>
+                    <span className="text-[9px] bg-amber-200 text-amber-950 px-1 py-0.2 rounded font-black group-hover:bg-amber-300">
+                      Audit
+                    </span>
+                  </div>
+                  <div className={`font-mono-num font-black text-base sm:text-lg mt-0.5 ${
+                    drawer.netCashDrawer >= 0 ? 'text-amber-950' : 'text-red-700'
+                  }`}>
+                    {currency} {drawer.netCashDrawer.toLocaleString()}
+                  </div>
+                </div>
+              </button>
+            ) : (
+              <div className="p-2.5 bg-amber-50/80 border-2 border-amber-300 rounded-xl flex items-center justify-between">
+                <div>
+                  <div className="text-[11px] font-black uppercase text-amber-900 flex items-center gap-1.5">
+                    <Banknote className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Cash in Drawer</span>
+                  </div>
+                  <div className="font-mono-num font-black text-base sm:text-lg text-amber-950 mt-0.5">
+                    {currency} 0
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 2. Cash Sales */}
             <div className="p-2.5 bg-emerald-50/80 border-2 border-emerald-300 rounded-xl flex items-center justify-between">
               <div>
                 <div className="text-[11px] font-black uppercase text-emerald-900 flex items-center gap-1.5">
@@ -341,7 +410,7 @@ export const POSScreen: React.FC<POSScreenProps> = ({
               </div>
             </div>
 
-            {/* 2. Credit Sales */}
+            {/* 3. Credit Sales */}
             <div className="p-2.5 bg-rose-50/80 border-2 border-rose-300 rounded-xl flex items-center justify-between">
               <div>
                 <div className="text-[11px] font-black uppercase text-rose-900 flex items-center gap-1.5">
@@ -354,7 +423,7 @@ export const POSScreen: React.FC<POSScreenProps> = ({
               </div>
             </div>
 
-            {/* 3. Total Sales */}
+            {/* 4. Total Sales */}
             <div className="p-2.5 bg-blue-50/80 border-2 border-blue-300 rounded-xl flex items-center justify-between">
               <div>
                 <div className="text-[11px] font-black uppercase text-blue-900 flex items-center gap-1.5">
@@ -367,14 +436,14 @@ export const POSScreen: React.FC<POSScreenProps> = ({
               </div>
             </div>
 
-            {/* 4. Total Profit */}
-            <div className="p-2.5 bg-amber-50/90 border-2 border-amber-400 rounded-xl flex items-center justify-between">
+            {/* 5. Total Profit */}
+            <div className="p-2.5 bg-purple-50/90 border-2 border-purple-300 rounded-xl flex items-center justify-between">
               <div>
-                <div className="text-[11px] font-black uppercase text-amber-950 flex items-center gap-1.5">
-                  <TrendingUp className="w-3.5 h-3.5 text-amber-700" />
+                <div className="text-[11px] font-black uppercase text-purple-950 flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-purple-700" />
                   <span>Total Profit (آج کا منافع)</span>
                 </div>
-                <div className="font-mono-num font-black text-base sm:text-lg text-amber-950 mt-0.5">
+                <div className="font-mono-num font-black text-base sm:text-lg text-purple-950 mt-0.5">
                   {currency} {todaySummary.totalProfit.toLocaleString()}
                 </div>
               </div>
@@ -382,6 +451,16 @@ export const POSScreen: React.FC<POSScreenProps> = ({
           </div>
         ) : (
           <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm font-black pt-1.5 border-t border-slate-100 mt-1">
+            {drawer && (
+              <button
+                type="button"
+                onClick={() => setIsCashDrawerModalOpen(true)}
+                className="text-amber-950 bg-amber-100 hover:bg-amber-200 px-2.5 py-0.5 rounded-lg border border-amber-300 cursor-pointer flex items-center gap-1"
+              >
+                <span>Drawer:</span>
+                <span className="font-mono-num">{currency} {drawer.netCashDrawer.toLocaleString()}</span>
+              </button>
+            )}
             <span className="text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200">
               Cash: {currency} {todaySummary.cashSales.toLocaleString()}
             </span>
@@ -391,7 +470,7 @@ export const POSScreen: React.FC<POSScreenProps> = ({
             <span className="text-blue-900 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-200">
               Total: {currency} {todaySummary.totalSales.toLocaleString()}
             </span>
-            <span className="text-amber-950 bg-amber-100 px-2.5 py-0.5 rounded-lg border border-amber-300">
+            <span className="text-purple-950 bg-purple-100 px-2.5 py-0.5 rounded-lg border border-purple-300">
               Profit: {currency} {todaySummary.totalProfit.toLocaleString()}
             </span>
           </div>
@@ -850,6 +929,159 @@ export const POSScreen: React.FC<POSScreenProps> = ({
               >
                 <Check className="w-5 h-5 stroke-[3]" />
                 <span>Confirm (درج کریں)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CASH DRAWER AUDIT & RECONCILIATION STATEMENT MODAL */}
+      {isCashDrawerModalOpen && drawer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border-2 border-slate-300 overflow-hidden flex flex-col max-h-[92vh]">
+            {/* Header */}
+            <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black">
+                  <Banknote className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h3 className="font-black text-base sm:text-lg">
+                    Cash in Drawer Audit (کاؤنٹر دراز حساب)
+                  </h3>
+                  <p className="text-xs font-urdu text-amber-300 font-bold">
+                    آمد و خرچ، ادھار وصولی اور ہول سیلر ادائیگیاں
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCashDrawerModalOpen(false)}
+                className="w-10 h-10 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 flex items-center justify-center font-black text-lg cursor-pointer transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Statement Body */}
+            <div className="p-5 overflow-y-auto space-y-4">
+              {/* Highlight Net Cash Box */}
+              <div className={`p-4 rounded-2xl border-2 text-center ${
+                drawer.netCashDrawer >= 0
+                  ? 'bg-amber-50 border-amber-300 text-amber-950'
+                  : 'bg-red-50 border-red-300 text-red-950'
+              }`}>
+                <span className="text-xs uppercase font-black tracking-wider block">
+                  Net Available Cash in Drawer (موجودہ نقد رقم)
+                </span>
+                <div className="font-mono-num text-3xl sm:text-4xl font-black mt-1">
+                  {currency} {drawer.netCashDrawer.toLocaleString()}
+                </div>
+                <p className="text-xs font-urdu font-bold mt-1 text-slate-600">
+                  تمام نقد فروخت، اخراجات اور مارکیٹ ادائیگیوں کے بعد دراز میں موجود رقم
+                </p>
+              </div>
+
+              {/* Inflows & Outflows Itemized List */}
+              <div className="bg-slate-50 rounded-2xl border-2 border-slate-200 divide-y divide-slate-200 text-xs sm:text-sm font-bold">
+                {/* 1. Starting Cash */}
+                <div className="p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                    <div>
+                      <div className="font-black text-slate-800">Starting Cash (ابتدائی کاؤنٹر کیش)</div>
+                      <div className="text-[11px] text-slate-500">Configured in Shop Settings</div>
+                    </div>
+                  </div>
+                  <div className="font-mono-num font-black text-slate-800">
+                    {currency} {drawer.initialCash.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* 2. Cash Sales Inflow */}
+                <div className="p-3 flex items-center justify-between bg-emerald-50/50">
+                  <div className="flex items-center gap-2">
+                    <ArrowDownLeft className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <div className="font-black text-emerald-950">(+) Retail Cash Sales (نقد سیلز)</div>
+                      <div className="text-[11px] text-emerald-800">Direct cash received from counter sales</div>
+                    </div>
+                  </div>
+                  <div className="font-mono-num font-black text-emerald-700">
+                    +{currency} {drawer.cashSales.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* 3. Customer Khata Collections */}
+                <div className="p-3 flex items-center justify-between bg-emerald-50/50">
+                  <div className="flex items-center gap-2">
+                    <ArrowDownLeft className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <div className="font-black text-emerald-950">(+) Customer Khata Recoveries (ادھار وصولی)</div>
+                      <div className="text-[11px] text-emerald-800">Credit customers paying back their balance</div>
+                    </div>
+                  </div>
+                  <div className="font-mono-num font-black text-emerald-700">
+                    +{currency} {drawer.customerRecoveries.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* 4. Operating Expenses Outflow */}
+                <div className="p-3 flex items-center justify-between bg-rose-50/50">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpRight className="w-4 h-4 text-red-600 shrink-0" />
+                    <div>
+                      <div className="font-black text-rose-950">(-) Cash Expenses Paid (دکان کے اخراجات)</div>
+                      <div className="text-[11px] text-rose-800">Rent, electricity, wages, tea, freight</div>
+                    </div>
+                  </div>
+                  <div className="font-mono-num font-black text-red-600">
+                    -{currency} {drawer.expensesPaid.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* 5. Supplier / Wholesale Liability Payments Outflow */}
+                <div className="p-3 flex items-center justify-between bg-rose-50/50">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpRight className="w-4 h-4 text-red-600 shrink-0" />
+                    <div>
+                      <div className="font-black text-rose-950">(-) Supplier Payments (ہول سیلر کو ادائیگیاں)</div>
+                      <div className="text-[11px] text-rose-800">Liabilities & stock credit debt paid in cash</div>
+                    </div>
+                  </div>
+                  <div className="font-mono-num font-black text-red-600">
+                    -{currency} {drawer.supplierPaymentsPaid.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* Final Net Calculation */}
+                <div className="p-3.5 flex items-center justify-between bg-amber-50">
+                  <div className="font-black text-slate-900 text-sm">
+                    (=) Net Cash in Drawer (موجودہ دراز نقد کیش)
+                  </div>
+                  <div className="font-mono-num font-black text-base sm:text-lg text-slate-900">
+                    {currency} {drawer.netCashDrawer.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Informative Urdu Note */}
+              <div className="p-3 rounded-2xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-start gap-2">
+                <Info className="w-4 h-4 text-blue-700 shrink-0 mt-0.5" />
+                <p className="font-urdu leading-relaxed font-bold">
+                  نوٹ: جب بھی آپ کسی ہول سیلر یا قرض خواہ کو رقم ادا کرتے ہیں، یا دکان کا کوئی خرچ کرتے ہیں تو وہ رقم فوری طور پر کاؤنٹر دراز کے کیش سے منہا (Minus) ہو جاتی ہے۔
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsCashDrawerModalOpen(false)}
+                className="h-12 min-h-[48px] px-6 bg-slate-900 hover:bg-black text-white font-black rounded-2xl text-sm cursor-pointer transition active:scale-95"
+              >
+                Close (بند کریں)
               </button>
             </div>
           </div>

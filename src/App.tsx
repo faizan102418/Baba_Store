@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Product, Customer, Supplier, SupplierTransaction, Sale, KhataTransaction, Expense, ShopSettings } from './types';
+import { calculateCashDrawerBreakdown } from './utils/accounting';
 import {
   INITIAL_PRODUCTS,
   INITIAL_CUSTOMERS,
@@ -58,6 +59,11 @@ export default function App() {
   const [settings, setSettings] = useState<ShopSettings>(() =>
     loadFromStorage(STORAGE_KEYS.SETTINGS, INITIAL_SETTINGS)
   );
+
+  // Live real-time physical Cash in Drawer calculation (Accounting Engine)
+  const cashBreakdown = useMemo(() => {
+    return calculateCashDrawerBreakdown(settings, sales, expenses, transactions, supplierTransactions);
+  }, [settings, sales, expenses, transactions, supplierTransactions]);
 
   // Active Screen: 'pos' | 'inventory' | 'khata' | 'investor'
   const [currentTab, setCurrentTab] = useState<'pos' | 'inventory' | 'khata' | 'investor'>('pos');
@@ -410,7 +416,7 @@ export default function App() {
         };
         setSupplierTransactions((prev) => [txnCredit, ...prev]);
       }
-      if (data.paidCashNow > 0) {
+      if (data.purchaseHead !== 'expense_supplies' && data.paidCashNow > 0) {
         const txnCash: SupplierTransaction = {
           id: `stxn-${Date.now() + 1}`,
           supplierId: targetSupplierId,
@@ -459,11 +465,12 @@ export default function App() {
     }
 
     // If purchase head is store supplies / consumables, log as operational expense (50700)
-    if (data.purchaseHead === 'expense_supplies') {
+    // Only log the actual cash paid now to prevent double-counting or fictitious expense before payment
+    if (data.purchaseHead === 'expense_supplies' && data.paidCashNow > 0) {
       const newExp: Expense = {
         id: `exp-${Date.now()}`,
         title: data.expenseItemName || data.note || 'Shop Consumables & Supplies',
-        amount: data.totalBill,
+        amount: data.paidCashNow,
         category: 'other',
         accountCode: '50700',
         timestamp: new Date().toISOString(),
@@ -531,6 +538,7 @@ export default function App() {
         onOpenMarketPurchase={() => setIsMarketPurchaseOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
         settings={settings}
+        cashDrawer={cashBreakdown.netCashDrawer}
       />
 
       {/* Main Body Screen */}
@@ -540,6 +548,10 @@ export default function App() {
             products={products}
             customers={customers}
             sales={sales}
+            expenses={expenses}
+            transactions={transactions}
+            supplierTransactions={supplierTransactions}
+            settings={settings}
             onCompleteSale={handleCompleteSale}
             onOpenQuickAdd={() => setIsQuickAddOpen(true)}
             onOpenMarketPurchase={() => setIsMarketPurchaseOpen(true)}
@@ -566,6 +578,8 @@ export default function App() {
             transactions={transactions}
             suppliers={suppliers}
             supplierTransactions={supplierTransactions}
+            sales={sales}
+            expenses={expenses}
             onAddCustomer={handleAddCustomer}
             onAddTransaction={handleAddTransaction}
             onDeleteCustomer={handleDeleteCustomer}
@@ -587,6 +601,7 @@ export default function App() {
             customers={customers}
             suppliers={suppliers}
             supplierTransactions={supplierTransactions}
+            transactions={transactions}
             settings={settings}
             onAddExpense={handleAddExpense}
             onDeleteExpense={handleDeleteExpense}
@@ -614,6 +629,7 @@ export default function App() {
         products={products}
         onRecordPurchase={handleRecordMarketPurchase}
         currency={settings.currency}
+        cashDrawer={cashBreakdown.netCashDrawer}
       />
 
       {/* Thermal Receipt Print & WhatsApp Modal */}
