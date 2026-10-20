@@ -30,6 +30,7 @@ interface MarketPurchaseModalProps {
     };
   }) => void;
   currency: string;
+  cashDrawer?: number;
 }
 
 export const MarketPurchaseModal: React.FC<MarketPurchaseModalProps> = ({
@@ -39,6 +40,7 @@ export const MarketPurchaseModal: React.FC<MarketPurchaseModalProps> = ({
   products,
   onRecordPurchase,
   currency,
+  cashDrawer,
 }) => {
   const [selectedSupplierId, setSelectedSupplierId] = useState<string>(suppliers[0]?.id || 'new');
   const [newSupplierName, setNewSupplierName] = useState('');
@@ -339,18 +341,43 @@ export const MarketPurchaseModal: React.FC<MarketPurchaseModalProps> = ({
               <span>Total Bill (کل بل):</span>
               <span className="font-mono-num">{currency} {billNum.toLocaleString()}</span>
             </div>
+            {typeof cashDrawer === 'number' && (
+              <div className="flex justify-between text-amber-900 bg-amber-100/60 p-2 rounded-xl">
+                <span>Available Cash in Drawer (دراز میں دستیاب کیش):</span>
+                <span className="font-mono-num">{currency} {cashDrawer.toLocaleString()}</span>
+              </div>
+            )}
             <div className="flex justify-between text-emerald-800">
               <span>Cash Out from Drawer (نقد ادائیگی):</span>
               <span className="font-mono-num">- {currency} {paidCashNow.toLocaleString()}</span>
             </div>
+            {typeof cashDrawer === 'number' && paidCashNow > 0 && (
+              <div className="flex justify-between text-slate-900 bg-slate-100 p-2 rounded-xl border border-slate-200">
+                <span>Remaining in Drawer (بقایا دراز کیش):</span>
+                <span className={`font-mono-num ${(cashDrawer - paidCashNow) < 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                  {currency} {(cashDrawer - paidCashNow).toLocaleString()}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between text-red-700 border-t border-slate-200 pt-1 text-sm">
               <span>Added to Accounts Payable 20100 (واجب الادا ادھار):</span>
               <span className="font-mono-num font-black">+ {currency} {unpaidCredit.toLocaleString()}</span>
             </div>
 
+            {typeof cashDrawer === 'number' && paidCashNow > cashDrawer && (
+              <div className="p-2.5 bg-red-100 border border-red-300 rounded-xl text-[11px] font-bold text-red-950 flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 text-red-700 shrink-0" />
+                <span>⚠️ Caution: Cash payment exceeds current physical cash in drawer!</span>
+              </div>
+            )}
+
             {paymentOption !== 'full_cash' && (
               <div className="p-2.5 bg-amber-50 border border-amber-300 rounded-xl text-[11px] font-bold text-amber-950 leading-relaxed">
+ replit-agent
                 <strong>بعد میں ادائیگی (Pay Later) کا طریقہ:</strong> یہ رقم خود بخود <strong>Accounts Payable (Account 20100 - واجب الادا)</strong> میں جمع ہو جائے گی۔ بعد میں جب کیش ادا کریں، <strong>Khata &gt; Wholesale Suppliers</strong> میں جا کر &ldquo;Paid Supplier&rdquo; کا بٹن دبائیں۔
+
+                💡 <strong>بعد میں ادائیگی (Pay Later) کا طریقہ:</strong> یہ رقم خود بخود <strong>Accounts Payable (Account 20100 - واجب الادا)</strong> میں جمع ہو جائے گی۔ بعد میں جب کیش ادا کریں، <strong>Khata &gt; Wholesale Suppliers</strong> میں جا کر &ldquo;Paid Supplier&rdquo; کا بٹن دبائیں اور یہ دراز کے کیش سے منہا ہو جائے گی۔
+   main
               </div>
             )}
           </div>

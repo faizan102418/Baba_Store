@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Sale, Expense, Product, Customer, Supplier, SupplierTransaction, ShopSettings } from '../types';
+import { Sale, Expense, Product, Customer, Supplier, SupplierTransaction, ShopSettings, KhataTransaction } from '../types';
 import { calculateFinancialSnapshot } from '../utils/accounting';
 import { AccountChartComponent } from './AccountChartComponent';
 import { exportSalesToCSV } from '../utils/csvExport';
@@ -24,8 +24,12 @@ import {
   CreditCard,
   Banknote,
   Percent,
+  replit-agent
   Phone,
   UserRound,
+
+  Info,
+ main
 } from 'lucide-react';
 import { sounds } from '../utils/audio';
 
@@ -36,6 +40,7 @@ interface InvestorScreenProps {
   customers: Customer[];
   suppliers: Supplier[];
   supplierTransactions: SupplierTransaction[];
+  transactions?: KhataTransaction[];
   settings: ShopSettings;
   onAddExpense: (expense: Omit<Expense, 'id' | 'timestamp'>) => void;
   onDeleteExpense: (id: string) => void;
@@ -55,6 +60,7 @@ export const InvestorScreen: React.FC<InvestorScreenProps> = ({
   customers,
   suppliers,
   supplierTransactions,
+  transactions = [],
   settings,
   onAddExpense,
   onDeleteExpense,
@@ -66,6 +72,7 @@ export const InvestorScreen: React.FC<InvestorScreenProps> = ({
   const [pinEntered, setPinEntered] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
   const [pinError, setPinError] = useState(false);
+  const [isCashAuditOpen, setIsCashAuditOpen] = useState(false);
 
   // Sub-tabs inside Investor Mode: Overview, Sales History & Trends, Chart of Accounts, Suppliers
   const [activeSubTab, setActiveSubTab] = useState<'overview' | 'sales' | 'coa' | 'suppliers'>('overview');
@@ -167,8 +174,17 @@ export const InvestorScreen: React.FC<InvestorScreenProps> = ({
 
   // Live real-time Chart of Accounts financial snapshot
   const snapshot = useMemo(() => {
-    return calculateFinancialSnapshot(products, customers, suppliers, sales, expenses, settings);
-  }, [products, customers, suppliers, sales, expenses, settings]);
+    return calculateFinancialSnapshot(
+      products,
+      customers,
+      suppliers,
+      sales,
+      expenses,
+      settings,
+      transactions,
+      supplierTransactions
+    );
+  }, [products, customers, suppliers, sales, expenses, settings, transactions, supplierTransactions]);
 
   // Filter sales & expenses for overview
   const filteredSales = useMemo(() => {
@@ -187,7 +203,7 @@ export const InvestorScreen: React.FC<InvestorScreenProps> = ({
   const totalCost = filteredSales.reduce((acc, s) => acc + s.costTotal, 0);
   const totalGrossProfit = filteredSales.reduce((acc, s) => acc + s.profit, 0);
   const totalExpenseAmount = filteredExpenses.reduce((acc, e) => acc + e.amount, 0);
-  const netProfit = Math.max(0, totalGrossProfit - totalExpenseAmount);
+  const netProfit = totalGrossProfit - totalExpenseAmount;
 
   // ==========================================
   // FILTERED SALES FOR DATE-RANGE VIEW
@@ -595,12 +611,25 @@ export const InvestorScreen: React.FC<InvestorScreenProps> = ({
           {/* 5 Balance Cards: Cash, Receivables, Inventory, Payables, Net Profit */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             {/* 10100 Cash Drawer */}
-            <div className="bg-amber-50 p-4 rounded-3xl border-2 border-amber-300">
-              <span className="text-[11px] font-black uppercase text-amber-900 block">10100 Cash in Drawer</span>
-              <div className="font-mono-num text-2xl font-black text-amber-950 mt-1">
-                {settings.currency} {snapshot.assets.cashDrawer.toLocaleString()}
+            <div className={`p-4 rounded-3xl border-2 flex flex-col justify-between ${
+              snapshot.assets.cashDrawer >= 0 ? 'bg-amber-50 border-amber-300' : 'bg-red-50 border-red-400'
+            }`}>
+              <div>
+                <span className="text-[11px] font-black uppercase text-amber-900 block">10100 Cash in Drawer</span>
+                <div className={`font-mono-num text-2xl font-black mt-1 ${
+                  snapshot.assets.cashDrawer >= 0 ? 'text-amber-950' : 'text-red-700'
+                }`}>
+                  {settings.currency} {snapshot.assets.cashDrawer.toLocaleString()}
+                </div>
+                <p className="text-[11px] text-amber-800 font-bold mt-1">کاؤنٹر نقد کیش (خالص بعد از کٹوتیاں)</p>
               </div>
-              <p className="text-[11px] text-amber-800 font-bold mt-1">کاؤنٹر نقد کیش</p>
+              <button
+                type="button"
+                onClick={() => setIsCashAuditOpen(true)}
+                className="mt-2 text-[10px] font-black bg-amber-200 hover:bg-amber-300 text-amber-950 px-2 py-1 rounded-lg cursor-pointer transition flex items-center gap-1 w-full justify-center"
+              >
+                <span>Audit Statement (حساب تفصیل) →</span>
+              </button>
             </div>
 
             {/* 10200 Receivables (Customer Khata) */}
@@ -627,16 +656,76 @@ export const InvestorScreen: React.FC<InvestorScreenProps> = ({
               <div className="font-mono-num text-2xl font-black text-red-950 mt-1">
                 {settings.currency} {snapshot.liabilities.accountsPayable.toLocaleString()}
               </div>
-              <p className="text-[11px] text-red-800 font-bold mt-1">ہول سیلر کو ادائیگیاں</p>
+              <p className="text-[11px] text-red-800 font-bold mt-1">ہول سیلر کو ادائیگیاں (ادائیگی سے کیش کٹتا ہے)</p>
             </div>
 
             {/* Net Profit */}
             <div className="bg-emerald-50 p-4 rounded-3xl border-2 border-emerald-400">
               <span className="text-[11px] font-black uppercase text-emerald-900 block">Net Profit</span>
-              <div className="font-mono-num text-2xl font-black text-emerald-950 mt-1">
+              <div className={`font-mono-num text-2xl font-black mt-1 ${
+                netProfit >= 0 ? 'text-emerald-950' : 'text-red-700'
+              }`}>
                 {settings.currency} {netProfit.toLocaleString()}
               </div>
-              <p className="text-[11px] text-emerald-800 font-bold mt-1">صاف منافع</p>
+              <p className="text-[11px] text-emerald-800 font-bold mt-1">صاف منافع (آمدنی منفی لاگت و خرچ)</p>
+            </div>
+          </div>
+
+          {/* Cash Flow Reconciliation Ribbon */}
+          <div className="bg-white rounded-2xl border-2 border-slate-200 p-3 sm:p-4 shadow-xs">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <span className="text-xs font-black uppercase text-slate-900 tracking-wider">
+                  Cash in Drawer Flow & Deductions (دراز نقد کیش آمد و کٹوتی کا توازن)
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCashAuditOpen(true)}
+                className="text-xs font-black text-amber-800 hover:text-amber-950 underline cursor-pointer"
+              >
+                View Full Audit (مکمل تفصیل)
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-xs">
+              <div className="p-2 bg-slate-50 border rounded-xl">
+                <div className="text-[10px] text-slate-500 font-bold">1. Opening Cash (ابتدائی)</div>
+                <div className="font-mono-num font-black text-slate-800">
+                  {settings.currency} {snapshot.cashDrawerBreakdown.initialCash.toLocaleString()}
+                </div>
+              </div>
+              <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <div className="text-[10px] text-emerald-700 font-bold">2. (+) Cash Sales (نقد سیلز)</div>
+                <div className="font-mono-num font-black text-emerald-800">
+                  +{settings.currency} {snapshot.cashDrawerBreakdown.cashSales.toLocaleString()}
+                </div>
+              </div>
+              <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <div className="text-[10px] text-emerald-700 font-bold">3. (+) Khata Recovery (وصولی)</div>
+                <div className="font-mono-num font-black text-emerald-800">
+                  +{settings.currency} {snapshot.cashDrawerBreakdown.customerRecoveries.toLocaleString()}
+                </div>
+              </div>
+              <div className="p-2 bg-rose-50 border border-rose-200 rounded-xl">
+                <div className="text-[10px] text-red-600 font-bold">4. (-) Expenses (اخراجات)</div>
+                <div className="font-mono-num font-black text-red-700">
+                  -{settings.currency} {snapshot.cashDrawerBreakdown.expensesPaid.toLocaleString()}
+                </div>
+              </div>
+              <div className="p-2 bg-rose-50 border border-rose-200 rounded-xl">
+                <div className="text-[10px] text-red-600 font-bold">5. (-) Supplier Paid (ادائیگیاں)</div>
+                <div className="font-mono-num font-black text-red-700">
+                  -{settings.currency} {snapshot.cashDrawerBreakdown.supplierPaymentsPaid.toLocaleString()}
+                </div>
+              </div>
+              <div className="p-2 bg-amber-100/70 border-2 border-amber-300 rounded-xl">
+                <div className="text-[10px] text-amber-950 font-black">(=) Net Drawer Cash (نقد)</div>
+                <div className="font-mono-num font-black text-amber-950 text-sm">
+                  {settings.currency} {snapshot.cashDrawerBreakdown.netCashDrawer.toLocaleString()}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1169,6 +1258,8 @@ export const InvestorScreen: React.FC<InvestorScreenProps> = ({
           expenses={expenses}
           settings={settings}
           snapshot={snapshot}
+          transactions={transactions}
+          supplierTransactions={supplierTransactions}
         />
       )}
 
@@ -1593,6 +1684,27 @@ export const InvestorScreen: React.FC<InvestorScreenProps> = ({
                 </select>
               </div>
 
+              <div className="p-3 rounded-2xl bg-amber-50 border border-amber-300 text-xs text-amber-950 space-y-1">
+                <div className="flex items-center gap-1.5 font-black text-amber-900">
+                  <Banknote className="w-4 h-4 text-amber-700 shrink-0" />
+                  <span>Deduction from Cash in Drawer (دراز سے منہا ہوگا):</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-700 font-bold">
+                  <span>Current Cash in Drawer:</span>
+                  <span className="font-mono-num font-black">{settings.currency} {snapshot.assets.cashDrawer.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center text-red-600 font-bold">
+                  <span>(-) Expense Amount:</span>
+                  <span className="font-mono-num font-black">-{settings.currency} {(parseFloat(expAmount) || 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-900 font-black border-t border-amber-200 pt-1">
+                  <span>Remaining Cash in Drawer:</span>
+                  <span className={`font-mono-num ${(snapshot.assets.cashDrawer - (parseFloat(expAmount) || 0)) < 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                    {settings.currency} {(snapshot.assets.cashDrawer - (parseFloat(expAmount) || 0)).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
               <div className="flex gap-2 pt-2">
                 <button
                   type="button"
@@ -1762,6 +1874,29 @@ export const InvestorScreen: React.FC<InvestorScreenProps> = ({
                 />
               </div>
 
+              {suppTxnType === 'payment_made' && (
+                <div className="p-3 rounded-2xl bg-amber-50 border-2 border-amber-300 text-xs text-amber-950 space-y-1">
+                  <div className="flex items-center gap-1.5 font-black text-amber-900">
+                    <Banknote className="w-4 h-4 text-amber-700 shrink-0" />
+                    <span>Deduction from Cash in Drawer (دراز سے کٹوتی ہوگی):</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-700 font-bold">
+                    <span>Available Cash in Drawer:</span>
+                    <span className="font-mono-num font-black">{settings.currency} {snapshot.assets.cashDrawer.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-red-600 font-bold">
+                    <span>(-) Paid to Supplier:</span>
+                    <span className="font-mono-num font-black">-{settings.currency} {(parseFloat(suppTxnAmount) || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-900 font-black border-t border-amber-200 pt-1">
+                    <span>Remaining Cash in Drawer:</span>
+                    <span className={`font-mono-num ${(snapshot.assets.cashDrawer - (parseFloat(suppTxnAmount) || 0)) < 0 ? 'text-red-600' : 'text-emerald-700'}`}>
+                      {settings.currency} {(snapshot.assets.cashDrawer - (parseFloat(suppTxnAmount) || 0)).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-2.5 pt-2">
                 <button
                   type="button"
@@ -1781,6 +1916,159 @@ export const InvestorScreen: React.FC<InvestorScreenProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: Full Cash in Drawer Audit & Reconciliation Modal */}
+      {isCashAuditOpen && snapshot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/70 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border-2 border-slate-300 overflow-hidden flex flex-col max-h-[92vh]">
+            {/* Header */}
+            <div className="px-5 py-4 bg-slate-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black">
+                  <Banknote className="w-6 h-6 stroke-[2.5]" />
+                </div>
+                <div>
+                  <h3 className="font-black text-base sm:text-lg">
+                    10100 Cash in Drawer Audit (کاؤنٹر دراز کیش حساب)
+                  </h3>
+                  <p className="text-xs font-urdu text-amber-300 font-bold">
+                    آمد و خرچ، ادھار وصولی اور ہول سیلر ادائیگیاں
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCashAuditOpen(false)}
+                className="w-10 h-10 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 flex items-center justify-center font-black text-lg cursor-pointer transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Statement Body */}
+            <div className="p-5 overflow-y-auto space-y-4">
+              {/* Highlight Net Cash Box */}
+              <div className={`p-4 rounded-2xl border-2 text-center ${
+                snapshot.cashDrawerBreakdown.netCashDrawer >= 0
+                  ? 'bg-amber-50 border-amber-300 text-amber-950'
+                  : 'bg-red-50 border-red-300 text-red-950'
+              }`}>
+                <span className="text-xs uppercase font-black tracking-wider block">
+                  Net Available Cash in Drawer (موجودہ نقد رقم)
+                </span>
+                <div className="font-mono-num text-3xl sm:text-4xl font-black mt-1">
+                  {settings.currency} {snapshot.cashDrawerBreakdown.netCashDrawer.toLocaleString()}
+                </div>
+                <p className="text-xs font-urdu font-bold mt-1 text-slate-600">
+                  تمام نقد فروخت، اخراجات اور مارکیٹ ادائیگیوں کے بعد دراز میں موجود نقد کیش
+                </p>
+              </div>
+
+              {/* Inflows & Outflows Itemized List */}
+              <div className="bg-slate-50 rounded-2xl border-2 border-slate-200 divide-y divide-slate-200 text-xs sm:text-sm font-bold">
+                {/* 1. Starting Cash */}
+                <div className="p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+                    <div>
+                      <div className="font-black text-slate-800">Starting Cash (ابتدائی دراز کیش)</div>
+                      <div className="text-[11px] text-slate-500">Configured in Shop Settings</div>
+                    </div>
+                  </div>
+                  <div className="font-mono-num font-black text-slate-800">
+                    {settings.currency} {snapshot.cashDrawerBreakdown.initialCash.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* 2. Cash Sales Inflow */}
+                <div className="p-3 flex items-center justify-between bg-emerald-50/50">
+                  <div className="flex items-center gap-2">
+                    <ArrowDownLeft className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <div className="font-black text-emerald-950">(+) Retail Cash Sales (نقد سیلز)</div>
+                      <div className="text-[11px] text-emerald-800">Cash received from store merchandise sales</div>
+                    </div>
+                  </div>
+                  <div className="font-mono-num font-black text-emerald-700">
+                    +{settings.currency} {snapshot.cashDrawerBreakdown.cashSales.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* 3. Customer Khata Collections */}
+                <div className="p-3 flex items-center justify-between bg-emerald-50/50">
+                  <div className="flex items-center gap-2">
+                    <ArrowDownLeft className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <div className="font-black text-emerald-950">(+) Customer Khata Recoveries (ادھار وصولی)</div>
+                      <div className="text-[11px] text-emerald-800">Credit customers paying their balances</div>
+                    </div>
+                  </div>
+                  <div className="font-mono-num font-black text-emerald-700">
+                    +{settings.currency} {snapshot.cashDrawerBreakdown.customerRecoveries.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* 4. Operating Expenses Outflow */}
+                <div className="p-3 flex items-center justify-between bg-rose-50/50">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpRight className="w-4 h-4 text-red-600 shrink-0" />
+                    <div>
+                      <div className="font-black text-rose-950">(-) Cash Expenses Paid (دکان کے اخراجات)</div>
+                      <div className="text-[11px] text-rose-800">Rent, electricity, wages, tea, freight</div>
+                    </div>
+                  </div>
+                  <div className="font-mono-num font-black text-red-600">
+                    -{settings.currency} {snapshot.cashDrawerBreakdown.expensesPaid.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* 5. Supplier / Wholesale Liability Payments Outflow */}
+                <div className="p-3 flex items-center justify-between bg-rose-50/50">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpRight className="w-4 h-4 text-red-600 shrink-0" />
+                    <div>
+                      <div className="font-black text-rose-950">(-) Supplier Payments (ہول سیلر کو ادائیگیاں)</div>
+                      <div className="text-[11px] text-rose-800">Liabilities & wholesale market debts paid in cash</div>
+                    </div>
+                  </div>
+                  <div className="font-mono-num font-black text-red-600">
+                    -{settings.currency} {snapshot.cashDrawerBreakdown.supplierPaymentsPaid.toLocaleString()}
+                  </div>
+                </div>
+
+                {/* Final Net Calculation */}
+                <div className="p-3.5 flex items-center justify-between bg-amber-50">
+                  <div className="font-black text-slate-900 text-sm">
+                    (=) Net Cash in Drawer (موجودہ دراز نقد کیش)
+                  </div>
+                  <div className="font-mono-num font-black text-base sm:text-lg text-slate-900">
+                    {settings.currency} {snapshot.cashDrawerBreakdown.netCashDrawer.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Informative Urdu Note */}
+              <div className="p-3 rounded-2xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-start gap-2">
+                <Info className="w-4 h-4 text-blue-700 shrink-0 mt-0.5" />
+                <p className="font-urdu leading-relaxed font-bold">
+                  نوٹ: جب بھی آپ کسی ہول سیلر یا قرض خواہ کو رقم ادا کرتے ہیں، یا دکان کا کوئی خرچ کرتے ہیں تو وہ رقم خود بخود کاؤنٹر دراز کے کیش سے منہا (Minus) ہو جاتی ہے اور بیلنس شیٹ 100 فیصد بیلنس رہتی ہے۔
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsCashAuditOpen(false)}
+                className="h-12 min-h-[48px] px-6 bg-slate-900 hover:bg-black text-white font-black rounded-2xl text-sm cursor-pointer transition active:scale-95"
+              >
+                Close (بند کریں)
+              </button>
+            </div>
           </div>
         </div>
       )}
