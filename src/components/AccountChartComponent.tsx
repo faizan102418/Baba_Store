@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Product, Customer, Supplier, Sale, Expense, ShopSettings } from '../types';
+import { Product, Customer, Supplier, Sale, Expense, ShopSettings, KhataTransaction, SupplierTransaction } from '../types';
 import { ACCOUNT_GROUPS, CHART_OF_ACCOUNTS, calculateFinancialSnapshot, FinancialSnapshot } from '../utils/accounting';
 import { Check, ChevronDown, ChevronUp, ShieldCheck, Layers, BookOpen } from 'lucide-react';
 
@@ -10,6 +10,8 @@ interface AccountChartComponentProps {
   sales: Sale[];
   expenses: Expense[];
   settings: ShopSettings;
+  transactions?: KhataTransaction[];
+  supplierTransactions?: SupplierTransaction[];
   snapshot?: FinancialSnapshot;
 }
 
@@ -20,12 +22,26 @@ export const AccountChartComponent: React.FC<AccountChartComponentProps> = ({
   sales,
   expenses,
   settings,
+  transactions = [],
+  supplierTransactions = [],
   snapshot: propSnapshot,
 }) => {
   // Real-time calculation if not provided
   const snapshot = useMemo(() => {
-    return propSnapshot || calculateFinancialSnapshot(products, customers, suppliers, sales, expenses, settings);
-  }, [propSnapshot, products, customers, suppliers, sales, expenses, settings]);
+    return (
+      propSnapshot ||
+      calculateFinancialSnapshot(
+        products,
+        customers,
+        suppliers,
+        sales,
+        expenses,
+        settings,
+        transactions,
+        supplierTransactions
+      )
+    );
+  }, [propSnapshot, products, customers, suppliers, sales, expenses, settings, transactions, supplierTransactions]);
 
   // Collapsed / expanded state for each group
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({

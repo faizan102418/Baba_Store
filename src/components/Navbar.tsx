@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { ShopSettings } from '../types';
+ replit-agent
 import { ShoppingCart, Package, BookOpen, TrendingUp, Settings, Volume2, VolumeX, Plus, ShoppingBasket } from 'lucide-react';
+
+import { ShoppingCart, Package, BookOpen, TrendingUp, Settings, Volume2, VolumeX, Plus, Banknote } from 'lucide-react';
+ main
 import { sounds } from '../utils/audio';
 import { PWAInstallButton } from './PWAInstallButton';
 
@@ -11,6 +15,7 @@ interface NavbarProps {
   onOpenMarketPurchase?: () => void;
   onOpenSettings: () => void;
   settings: ShopSettings;
+  cashDrawer?: number;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -20,6 +25,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenMarketPurchase,
   onOpenSettings,
   settings,
+  cashDrawer,
 }) => {
   const [isMuted, setIsMuted] = useState(!sounds.isEnabled());
 
@@ -119,7 +125,35 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </nav>
 
+ replit-agent
         <div className="flex items-center gap-1.5 ml-auto sm:ml-0">
+
+        {/* Right: Buy Stock + Add Item + Sound + Settings (All 48px height minimum) */}
+        <div className="flex items-center gap-2">
+          {/* Cash in Drawer Live Indicator Badge */}
+          {typeof cashDrawer === 'number' && (
+            <div
+              className={`h-12 min-h-[48px] px-3 sm:px-3.5 rounded-2xl border flex items-center gap-2 text-xs font-black shadow-xs ${
+                cashDrawer >= 0
+                  ? 'bg-slate-950 border-amber-400/60 text-amber-300'
+                  : 'bg-red-950/80 border-red-500 text-red-300'
+              }`}
+              title="Current Cash in Drawer (کاؤنٹر دراز نقد کیش)"
+            >
+              <div className="w-6 h-6 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center shrink-0">
+                <Banknote className="w-3.5 h-3.5 stroke-[2.5]" />
+              </div>
+              <div className="text-left leading-tight">
+                <div className="text-[10px] text-slate-400 font-urdu font-bold">دراز کیش</div>
+                <div className="font-mono-num font-black text-xs sm:text-sm text-white">
+                  {settings.currency} {cashDrawer.toLocaleString()}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Market Stock Purchase (Cashier buys stock: cash or pay later on credit) */}
+ main
           {onOpenMarketPurchase && (
             <button
               onClick={onOpenMarketPurchase}

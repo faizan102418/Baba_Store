@@ -1,4 +1,4 @@
-import { AccountGroup, AccountItem, Product, Customer, Supplier, Sale, Expense, ShopSettings } from '../types';
+import { AccountGroup, AccountItem, Product, Customer, Supplier, Sale, Expense, ShopSettings, KhataTransaction, SupplierTransaction } from '../types';
 
 export const ACCOUNT_GROUPS: AccountGroup[] = [
   { code: '10000', name: 'Assets', nameUrdu: 'اثاثہ جات (مال و نقد)', type: 'debit' },
@@ -180,6 +180,15 @@ export const CHART_OF_ACCOUNTS: AccountItem[] = [
   },
 ];
 
+export interface CashDrawerBreakdown {
+  initialCash: number;            // Opening cash (ابتدائی کاؤنٹر کیش)
+  cashSales: number;              // (+) Cash received from sales (نقد فروخت)
+  customerRecoveries: number;     // (+) Customer debt payments collected in cash (گاہک کھاتہ وصولی)
+  expensesPaid: number;           // (-) Cash expenses paid (دکان کے اخراجات)
+  supplierPaymentsPaid: number;   // (-) Liability / wholesale supplier payments paid in cash (ہول سیلر کو ادائیگیاں)
+  netCashDrawer: number;          // (=) Available physical cash in counter drawer (موجودہ نقد کیش)
+}
+
 export interface FinancialSnapshot {
   assets: {
     cashDrawer: number;
@@ -218,6 +227,48 @@ export interface FinancialSnapshot {
   netIncome: number;
   balanceSheetInBalance: boolean;
   discrepancy: number;
+  cashDrawerBreakdown: CashDrawerBreakdown;
+}
+
+// Compute live real-time physical Cash in Drawer
+// = Initial Opening Cash + Cash Sales + Customer Khata Collections - Cash Expenses - Supplier / Liability Payments
+export function calculateCashDrawerBreakdown(
+  settings: ShopSettings,
+  sales: Sale[] = [],
+  expenses: Expense[] = [],
+  transactions: KhataTransaction[] = [],
+  supplierTransactions: SupplierTransaction[] = []
+): CashDrawerBreakdown {
+  const initialCash = Number(settings.initialCashInDrawer) || 0;
+
+  // 1. Cash Sales (from retail POS)
+  const cashSales = sales
+    .filter((s) => s.paymentType === 'cash')
+    .reduce((acc, s) => acc + (Number(s.total) || 0), 0);
+
+  // 2. Customer Khata Recoveries (customer paid their credit debt in cash)
+  const customerRecoveries = transactions
+    .filter((t) => t.type === 'payment')
+    .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+
+  // 3. Operating Expenses paid in cash
+  const expensesPaid = expenses.reduce((acc, e) => acc + (Number(e.amount) || 0), 0);
+
+  // 4. Wholesale / Supplier / Liability Payments made in cash
+  const supplierPaymentsPaid = supplierTransactions
+    .filter((t) => t.type === 'payment_made')
+    .reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
+
+  const netCashDrawer = initialCash + cashSales + customerRecoveries - expensesPaid - supplierPaymentsPaid;
+
+  return {
+    initialCash,
+    cashSales,
+    customerRecoveries,
+    expensesPaid,
+    supplierPaymentsPaid,
+    netCashDrawer,
+  };
 }
 
 // Compute live real-time financial snapshot from operational data
@@ -227,18 +278,19 @@ export function calculateFinancialSnapshot(
   suppliers: Supplier[],
   sales: Sale[],
   expenses: Expense[],
-  settings: ShopSettings
+  settings: ShopSettings,
+  transactions: KhataTransaction[] = [],
+  supplierTransactions: SupplierTransaction[] = []
 ): FinancialSnapshot {
   // 10100 Cash in Counter Drawer
-  // = Initial Cash + Cash Sales + Customer Cash Payments - Cash Paid to Suppliers - Cash Expenses
-  const totalCashSales = sales
-    .filter((s) => s.paymentType === 'cash')
-    .reduce((acc, s) => acc + s.total, 0);
-
-  const totalCashExpenses = expenses.reduce((acc, e) => acc + e.amount, 0);
-
-  // Cash in drawer
-  const cashDrawer = Math.max(0, (settings.initialCashInDrawer || 0) + totalCashSales - totalCashExpenses);
+  const cashBreakdown = calculateCashDrawerBreakdown(
+    settings,
+    sales,
+    expenses,
+    transactions,
+    supplierTransactions
+  );
+  const cashDrawer = cashBreakdown.netCashDrawer;
 
   // 10200 Customer Receivables
   const accountsReceivable = customers.reduce((acc, c) => acc + (c.balance > 0 ? c.balance : 0), 0);
@@ -251,7 +303,7 @@ export function calculateFinancialSnapshot(
 
   const totalAssets = cashDrawer + accountsReceivable + inventory + bank;
 
-  // 20100 Accounts Payable (Suppliers)
+  // 20100 Accounts Payable (Wholesale Suppliers)
   const accountsPayable = suppliers.reduce((acc, s) => acc + (s.balance > 0 ? s.balance : 0), 0);
   const shortTermDebt = 0;
   const accruedExpenses = 0;
@@ -282,17 +334,23 @@ export function calculateFinancialSnapshot(
     else refreshment += e.amount;
   });
 
-  const totalExpensesAndCogs = cogs + rent + electricity + wages + freight + damageLoss + refreshment;
-  const netIncome = Math.max(0, totalRevenue - totalExpensesAndCogs);
+  const totalOperatingExpenses = rent + electricity + wages + freight + damageLoss + refreshment;
+  const totalExpensesAndCogs = cogs + totalOperatingExpenses;
+  const netIncome = totalRevenue - totalExpensesAndCogs;
 
-  // 30000 Equity
-  const investorCapital = settings.investorCapital || 0;
-  const cashierCapital = settings.cashierCapital || 0;
+  // 30000 Equity (Owner Net Worth)
+  // Double Entry Identity: Total Assets = Total Liabilities + Total Equity
+  // Therefore: Total Equity = Total Assets - Total Liabilities
+  const totalEquity = totalAssets - totalLiabilities;
   const retainedEarnings = netIncome;
-  const totalEquity = investorCapital + cashierCapital + retainedEarnings;
+  const contributedCapital = totalEquity - retainedEarnings;
+
+  const investorShareRatio = (settings.investorSharePercent ?? 50) / 100;
+  const investorCapital = Math.round(contributedCapital * investorShareRatio);
+  const cashierCapital = contributedCapital - investorCapital;
 
   const discrepancy = Math.abs(totalAssets - (totalLiabilities + totalEquity));
-  const balanceSheetInBalance = discrepancy < 1.0;
+  const balanceSheetInBalance = discrepancy < 0.01;
 
   return {
     assets: {
@@ -332,5 +390,6 @@ export function calculateFinancialSnapshot(
     netIncome,
     balanceSheetInBalance,
     discrepancy,
+    cashDrawerBreakdown: cashBreakdown,
   };
 }
